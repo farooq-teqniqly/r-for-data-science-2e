@@ -1,0 +1,112 @@
+---
+title: "R for Data Science 2e - Chapter 03 - Data Transformation"
+author: "Farooq Mahmud"
+format: 
+  html:
+    self-contained: true
+    echo: true
+    message: false
+    warning: false
+    error: true # IMPORTANT NOTE - this makes the file render even if there is an error. it is imperative that you check your .html document *before submission* to make sure that it has all results in it.
+editor: source
+---
+
+**1. In a single pipeline for each condition, find all flights that meet the condition:**
+
+- **Had an arrival delay of two or more hours**
+```{r}
+library(nycflights13)
+library(tidyverse)
+library(dplyr)
+
+flights |>
+  filter(arr_delay >= 120) |>
+  relocate(arr_delay, .before = year) |>
+  head(3)
+```
+
+- **Flew to Houston (IAH or HOU)**
+```{r}
+flights |>
+  filter(dest %in% c("IAH", "HOU")) |>
+  relocate(dest, .before = year) |>
+  head(3)
+```
+
+- **Were operated by United, American, or Delta**
+```{r}
+flights |>
+  filter(carrier %in% c("UA", "AA", "DL")) |>
+  relocate(carrier, .before = year) |>
+  head(3)
+```
+
+- **Departed in summer (July, August, and September)**
+```{r}
+flights |>
+  filter(month %in% c(7, 8, 9)) |>
+  head(3)
+```
+
+- **Arrived more than two hours late, but didn’t leave late**
+```{r}
+flights |>
+  filter(arr_delay >= 120) |>
+  filter(dep_delay == 0) |>
+  relocate(arr_delay, .before = year) |>
+  relocate(dep_delay, .after = arr_delay) |>
+  head(3)
+```
+
+- **Were delayed by at least an hour, but made up more than 30 minutes in flight**
+```{r}
+flights |>
+  filter(dep_delay >= 60) |>
+  filter(dep_delay - arr_delay > 30) |>
+  relocate(dep_delay, .before = year) |>
+  relocate(arr_delay, .after = dep_delay) |>
+  head(3)
+```
+
+**2. Sort flights to find the flights with the longest departure delays. Find the flights that left earliest in the morning.**
+```{r}
+flights |>
+  arrange(desc(dep_delay)) |>
+  relocate(dep_delay, .before = year) |>
+  head(3)
+flights |>
+  arrange(dep_time) |>
+  relocate(dep_time, .before = year) |>
+  head(3)
+```
+
+**3. Sort flights to find the fastest flights. (Hint: Try including a math calculation inside of your function.)**
+```{r}
+flights |>
+  mutate(mph = (distance / air_time) * 60) |>
+  arrange(desc(mph)) |>
+  relocate(mph, .before = year) |>
+  head(3)
+```
+
+**4. Was there a flight on every day of 2013?**
+```{r}
+daily_flights <- flights |>
+  group_by(year, month, day) |>
+  summarize(flights_per_day = n())
+nrow(daily_flights) == 365
+```
+
+**5. Which flights traveled the farthest distance? Which traveled the least distance?**
+```{r}
+most_distance <- flights |>
+  arrange(desc(distance)) |>
+  relocate(distance, .before = year)
+head(most_distance, 3)
+
+least_distance <- flights |>
+  arrange(distance) |>
+  relocate(distance, .before = year) |>
+  na.omit()
+head(least_distance, 3)
+```
