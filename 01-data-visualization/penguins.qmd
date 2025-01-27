@@ -1,0 +1,135 @@
+---
+title: "R for Data Science 2e - Chapter 01 - Data Visualization"
+author: "Farooq Mahmud"
+format: 
+  html:
+    self-contained: true
+    echo: true
+    message: false
+    warning: false
+    error: true # IMPORTANT NOTE - this makes the file render even if there is an error. it is imperative that you check your .html document *before submission* to make sure that it has all results in it.
+editor: source
+---
+
+**Plot the relationship between flipper length and body mass for the three penguins species in the [palmerpenguins](https://allisonhorst.github.io/palmerpenguins/) dataset.**
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+library(ggthemes)
+
+penguins_data <- penguins
+
+penguins_data |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(mapping = aes(color = species, shape = species)) +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Body mass and flipper length",
+    subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo penguin species",
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Species",
+    shape = "Species"
+  ) +
+  scale_color_colorblind()
+```
+
+## Exercises
+**1. How many rows are in penguins? How many columns?**
+```{r}
+glimpse(penguins_data)
+```
+
+There are 333 rows and 8 columns.
+
+**2. What does the bill_depth_mm variable in the penguins data frame describe? Read the help for ?penguins to find out.**
+
+According to the help, bill_depth_mm is a number denoting bill depth in millimeters.
+
+**3.Make a scatterplot of bill_depth_mm versus bill_length_mm. That is, make a scatterplot with bill_depth_mm on the y-axis and bill_length_mm on the x-axis. Describe the relationship between these two variables.**
+
+```{r}
+penguins_data |>
+  ggplot(aes(x = bill_length_mm, y = bill_depth_mm)) +
+  geom_point() +
+  labs(
+    title = "Bill length and bill depth",
+    x = "Bill length (mm)", y = "Bill depth (mm)"
+  ) +
+  geom_smooth(method = "lm") +
+  scale_color_colorblind()
+
+cor(penguins_data$bill_length_mm, penguins_data$bill_depth_mm)
+```
+There seems to be a rather weak negative relationship. The `cor()` function can be used to quantitatively show the weak correlation.
+
+**4. What happens if you make a scatterplot of species versus bill_depth_mm? What might be a better choice of geom?**
+
+```{r}
+penguins_data |>
+  ggplot(aes(x = species, y = bill_depth_mm)) +
+  geom_point()
+```
+`geom_point()` shows a plot with three "lines", one for each species. A boxplot might be a better visualization.
+```{r}
+library(viridis)
+
+penguins_data |>
+  ggplot(aes(x = species, y = bill_depth_mm, fill = species)) +
+  geom_boxplot() +
+  scale_fill_viridis_d(option = "C") +
+  theme_minimal()
+```
+
+**5. Why does the following give an error, and how would you fix it?**
+```{r}
+ggplot(data = penguins_data) +
+  geom_point()
+```
+This gives an error because an aesthethic must be defined in at least one layer.
+
+**6. What does the `na.rm` argument do in `geom_point()`? What is the default value of the argument? Create a scatterplot where you successfully use this argument set to `TRUE`.
+```{r}
+penguins_data2 <- penguins
+
+penguins_data2 |>
+  ggplot(mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(na.rm = TRUE)
+```
+`na.rm` when set to `TRUE`, remmoves missing values, silently. The default value is `FALSE` which removes missing values with a warning. 
+
+**7. Add the following caption to the plot you made in the previous exercise: “Data come from the palmerpenguins package.” Hint: Take a look at the documentation for labs().**
+```{r}
+penguins_data |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(mapping = aes(color = species, shape = species)) +
+  geom_smooth(method = "lm") +
+  labs(
+    title = "Body mass and flipper length",
+    subtitle = "Dimensions for Adelie, Chinstrap, and Gentoo penguin species",
+    caption = "Data comes from the palmerpenguins package.",
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Species",
+    shape = "Species"
+  ) +
+  scale_color_colorblind()
+```
+
+**8. Re-create the following visualization. What aesthetic should bill_depth_mm be mapped to? And should it be mapped at the global level or at the geom level?**
+```{r}
+library(viridis)
+
+penguins_data |>
+  ggplot(aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(mapping = aes(color = bill_depth_mm)) +
+  geom_smooth() +
+  labs(
+    title = "Body mass and flipper length by bill depth",
+    caption = "Data comes from the palmerpenguins package",
+    x = "Flipper length (mm)", y = "Body mass (g)",
+    color = "Bill depth (mm)"
+  ) +
+  scale_color_viridis_c(option = "C", direction = -1) +
+  theme_minimal()
+```
+Since we want a single fit line, the aesthetic should be mapped to the geom level.
