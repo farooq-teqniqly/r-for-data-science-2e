@@ -31,9 +31,9 @@ cor(penguins_data$bill_length_mm, penguins_data$bill_depth_mm)
 library(viridis)
 
 penguins_data |>
-ggplot(aes(x = species, y = bill_depth_mm, fill = species)) +
-  geom_boxplot() + 
-  scale_fill_viridis_d(option = "C") + 
+  ggplot(aes(x = species, y = bill_depth_mm, fill = species)) +
+  geom_boxplot() +
+  scale_fill_viridis_d(option = "C") +
   theme_minimal()
 
 
